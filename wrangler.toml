@@ -1,0 +1,19 @@
+# wrangler.toml
+
+name = "mon-blog"
+type = "static"
+
+# Configuration du déploiement
+[build]
+  command = "npm run build"
+  publish = "public"
+
+# Configuration du site
+[site]
+  bucket = "public"
+  entry-point = "."
+
+# Configuration des variables d'environnement
+[env.production]
+  name = "production"
+  site = "mon-blog"
