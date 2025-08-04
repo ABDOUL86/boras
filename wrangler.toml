@@ -1,6 +1,6 @@
 # wrangler.toml
 
-name = "mon-blog"
+name = "boras"
 type = "static"
 
 # Configuration du déploiement
